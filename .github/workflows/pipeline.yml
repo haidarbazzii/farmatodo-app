@@ -1,0 +1,56 @@
+name: Farmatodo CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  # --- ETAPA 1: INTEGRACIÓN Y PRUEBAS CONTINUAS (CI/CT) ---
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 25 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+
+      - name: Compilar y Ejecutar Tests (CI + CT)
+        # Usamos 'verify' para correr tests y chequeos de calidad
+        # -DskipTests=false asegura que los tests corran
+        run: ./mvnw clean verify
+
+  # --- ETAPA 2: ENTREGA/DESPLIEGUE CONTINUO (CD) ---
+  build-push-docker:
+    needs: build-and-test # Solo corre si los tests pasaron
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # Solo desplegar si es la rama principal
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir y Subir Imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          # Nombra la imagen como: tu_usuario/farmatodo-challenge:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/farmatodo-challenge:latest

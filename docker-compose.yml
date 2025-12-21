@@ -1,0 +1,44 @@
+services:
+  # 1. Tu Aplicación Spring Boot
+  app:
+    build: .
+    container_name: farmatodo-api
+    ports:
+      - "8080:8080" # Puerto externo:interno
+    depends_on:
+      - db
+      - mailpit
+    environment:
+      # Sobrescribimos la config de application.properties para Docker
+      # Usamos el nombre del servicio 'db' y el puerto interno 5432
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/farmatodo_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      # Configuración de correo apuntando al contenedor 'mailpit'
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+
+  # 2. Base de Datos
+  db:
+    image: postgres:16-alpine
+    container_name: farmatodo-db
+    restart: always
+    environment:
+      - POSTGRES_DB=farmatodo_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432" # Host:5433 -> Contenedor:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 3. Servidor de Correos Fake
+  mailpit:
+    image: axllent/mailpit
+    container_name: farmatodo-mail
+    ports:
+      - "8025:8025" # Interfaz Web
+      - "1025:1025" # Puerto SMTP
+
+volumes:
+  postgres_data:
