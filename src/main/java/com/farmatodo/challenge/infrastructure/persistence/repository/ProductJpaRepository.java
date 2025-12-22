@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long> {
 
@@ -21,4 +22,6 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
     @Modifying
     @Query("UPDATE ProductEntity p SET p.stock = p.stock - :qty WHERE p.id = :id AND p.stock >= :qty")
     int decreaseStock(@Param("id") Long id, @Param("qty") Integer qty);
+
+    Optional<ProductEntity> findByName(String name);
 }

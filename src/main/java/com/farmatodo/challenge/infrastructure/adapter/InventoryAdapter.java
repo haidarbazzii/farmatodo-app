@@ -32,6 +32,28 @@ public class InventoryAdapter implements InventoryPort {
     }
 
     @Override
+    public Optional<Product> findByName(String name) {
+        return repository.findByName(name).map(this::toDomain);
+    }
+
+    // 2. Implementación de guardar
+    @Override
+    public Product save(Product product) {
+        // Convertimos Dominio -> Entidad
+        ProductEntity entity = new ProductEntity();
+        // Si el producto viene con ID (actualización), lo seteamos. Si es nuevo, es null.
+        entity.setId(product.getId());
+        entity.setName(product.getName());
+        entity.setDescription(product.getDescription());
+        entity.setPrice(product.getPrice());
+        entity.setStock(product.getStock());
+
+        ProductEntity savedEntity = repository.save(entity);
+
+        return toDomain(savedEntity);
+    }
+
+    @Override
     public Optional<Product> findById(Long id) {
         return repository.findById(id).map(this::toDomain);
     }

@@ -13,4 +13,6 @@ public interface InventoryPort {
     boolean decreaseStock(Long productId, Integer quantity);
 
     List<Product> findAll();
+    Product save(Product product);
+    Optional<Product> findByName(String name);
 }

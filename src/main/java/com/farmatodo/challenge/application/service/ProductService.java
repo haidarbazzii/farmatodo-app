@@ -54,4 +54,23 @@ public class ProductService implements ProductUseCase {
     public List<SearchHistory> getSearchHistory() {
         return searchHistoryPort.findAllHistory();
     }
+
+    public Product createProduct(Product product) {
+        // 1. Validar unicidad del nombre
+        if (inventoryPort.findByName(product.getName()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe un producto con el nombre: " + product.getName());
+        }
+
+        // 2. Validaciones extra (opcional pero recomendado)
+        if (product.getPrice().doubleValue() <= 0) {
+            throw new IllegalArgumentException("El precio debe ser mayor a 0");
+        }
+        if (product.getStock() < 0) {
+            throw new IllegalArgumentException("El stock no puede ser negativo");
+        }
+
+        // 3. Guardar
+        log.info("Creando nuevo producto: {}", product.getName());
+        return inventoryPort.save(product);
+    }
 }
