@@ -94,10 +94,16 @@ public class OrderService implements OrderUseCase {
         log.info("ADMIN: Probabilidad de rechazo actualizada a: {}", probability);
     }
 
+    public int getMaxRetries() { return maxRetries; }
+
+    public double getPaymentRejectionProbability() { return paymentRejectionProbability; }
+
     public void setMaxRetries(int retries) {
         this.maxRetries = retries;
         log.info("ADMIN: Max reintentos actualizados a: {}", retries);
     }
+
+
 
     @Override
     @Transactional

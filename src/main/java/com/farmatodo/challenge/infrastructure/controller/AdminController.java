@@ -2,6 +2,7 @@ package com.farmatodo.challenge.infrastructure.controller;
 
 import com.farmatodo.challenge.application.service.OrderService;
 import com.farmatodo.challenge.application.service.ProductService;
+import com.farmatodo.challenge.application.service.TokenizationService;
 import com.farmatodo.challenge.infrastructure.persistence.entity.ProductEntity;
 import com.farmatodo.challenge.infrastructure.persistence.repository.ProductJpaRepository; // Usamos JPA directo para rapidez en admin
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,16 @@ public class AdminController {
     private final OrderService orderService;
     private final ProductJpaRepository productRepository;
     private final ProductService productService;
+    private final TokenizationService tokenService;
 
-    // 1. Ver configuración actual
     @GetMapping("/config")
     public ResponseEntity<Map<String, Object>> getConfig() {
-        return ResponseEntity.ok(orderService.getCurrentConfig());
+        return ResponseEntity.ok(Map.of(
+                "paymentRejectionProbability", orderService.getPaymentRejectionProbability(),
+                "tokenRejectionProbability", tokenService.getRejectionProbability(), // <--- Nuevo campo
+                "maxRetries", orderService.getMaxRetries(),
+                "minStockDisplay", productService.getMinStockDisplay()
+        ));
     }
 
     // 2. Cambiar Probabilidad de Fallo (0.0 a 1.0)
@@ -56,5 +62,11 @@ public class AdminController {
     public ResponseEntity<String> setMinStockDisplay(@RequestParam int value) {
         productService.setMinStockDisplay(value);
         return ResponseEntity.ok("Productos con stock menor a " + value + " ahora estarán ocultos.");
+    }
+
+    @PostMapping("/config/token-rejection-probability")
+    public ResponseEntity<String> setTokenRejectionProbability(@RequestParam double value) {
+        tokenService.setTokenRejectionProbability(value);
+        return ResponseEntity.ok("Probabilidad de fallo en tokenización actualizada a: " + value);
     }
 }

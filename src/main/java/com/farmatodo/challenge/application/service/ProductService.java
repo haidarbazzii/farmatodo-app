@@ -23,6 +23,10 @@ public class ProductService implements ProductUseCase {
     @Value("${app.business.product.min-stock-display:0}")
     private int minStockDisplay;
 
+    public int getMinStockDisplay() {
+        return minStockDisplay;
+    }
+
     public List<Product> getAllAvailableProducts() {
         // Filtramos usando la variable dinámica
         return inventoryPort.findAll().stream()

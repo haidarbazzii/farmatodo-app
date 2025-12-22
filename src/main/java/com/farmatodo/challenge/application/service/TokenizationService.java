@@ -29,6 +29,18 @@ public class TokenizationService implements TokenizationUseCase {
     @Value("${app.security.encryption-key}")
     private String encryptionKey; // Debe ser 16 chars para AES-128
 
+    public double getRejectionProbability() {
+        return rejectionProbability;
+    }
+
+    public void setTokenRejectionProbability(double probability) {
+        if (probability < 0 || probability > 1) {
+            throw new IllegalArgumentException("La probabilidad debe estar entre 0.0 y 1.0");
+        }
+        this.rejectionProbability = probability;
+        log.info("ADMIN: Probabilidad de fallo en tokenización actualizada a: {}", probability);
+    }
+
     @Override
     public CardToken createToken(String pan, String cvv, String expDate) {
         // 1. Probabilidad de rechazo
