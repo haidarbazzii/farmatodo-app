@@ -25,13 +25,19 @@ public class GlobalExceptionHandler {
     // 2. Manejo de Errores Inesperados (Ej: Fallo de Pago, Base de datos caída)
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleGeneralError(RuntimeException ex) {
-        log.error("Error crítico capturado: ", ex);
+        System.err.println(" ERROR CRÍTICO CAPTURADO ");
+        ex.printStackTrace(); // Esto forzará que el error salga en el Log de Render
+        // ---------------------------
+        log.error("Error no controlado: ", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()); // Devuelve 500
     }
 
     // 3. Catch-All
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
+        System.err.println(" ERROR CRÍTICO CAPTURADO ");
+        ex.printStackTrace(); // Esto forzará que el error salga en el Log de Render
+        // ---------------------------
         log.error("Error no controlado: ", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ha ocurrido un error inesperado en el servidor.");
     }
