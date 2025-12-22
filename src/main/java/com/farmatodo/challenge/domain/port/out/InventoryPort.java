@@ -11,4 +11,6 @@ public interface InventoryPort {
     // Devuelve true si logró restar stock en la DB
     // Evita condiciones de carrera
     boolean decreaseStock(Long productId, Integer quantity);
+
+    List<Product> findAll();
 }

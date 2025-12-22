@@ -25,6 +25,13 @@ public class InventoryAdapter implements InventoryPort {
     }
 
     @Override
+    public List<Product> findAll() {
+        return repository.findAll().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Product> findById(Long id) {
         return repository.findById(id).map(this::toDomain);
     }

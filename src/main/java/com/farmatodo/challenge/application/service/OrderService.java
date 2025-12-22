@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -76,6 +77,27 @@ public class OrderService implements OrderUseCase {
 
     @Value("${app.business.payment.rejection-probability:0.2}")
     private double paymentRejectionProbability;
+
+
+    public Map<String, Object> getCurrentConfig() {
+        return Map.of(
+                "paymentRejectionProbability", paymentRejectionProbability,
+                "maxRetries", maxRetries
+        );
+    }
+
+    public void setPaymentRejectionProbability(double probability) {
+        if (probability < 0 || probability > 1) {
+            throw new IllegalArgumentException("La probabilidad debe estar entre 0.0 y 1.0");
+        }
+        this.paymentRejectionProbability = probability;
+        log.info("ADMIN: Probabilidad de rechazo actualizada a: {}", probability);
+    }
+
+    public void setMaxRetries(int retries) {
+        this.maxRetries = retries;
+        log.info("ADMIN: Max reintentos actualizados a: {}", retries);
+    }
 
     @Override
     @Transactional
