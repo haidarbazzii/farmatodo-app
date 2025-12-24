@@ -79,7 +79,7 @@ public class TokenizationService implements TokenizationUseCase {
         entity.setMaskedPan(maskedPan);
         entity.setEncryptedData(encryptedData);
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setExpirationDate(LocalDateTime.now().plusMinutes(15));
+        entity.setExpirationDate(LocalDateTime.now().plusMinutes(20));
 
         tokenRepository.save(entity);
 
