@@ -1,6 +1,8 @@
 package com.farmatodo.challenge.domain.port.out;
 
 import com.farmatodo.challenge.domain.model.TransactionLog;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +11,9 @@ public interface TransactionLogPort {
     void saveLog(TransactionLog log);
 
     List<TransactionLog> findByTransactionId(UUID transactionId);
-
+    // REQUIRES_NEW: Vital para logs. Si la transacción principal falla (rollback),
+    // queremos que el log de "Fallo" SÍ se guarde. Crea una mini-transacción aparte.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     default void logEvent(UUID txId, String event, String status, String msg) {
         saveLog(TransactionLog.builder()
                 .transactionId(txId)
