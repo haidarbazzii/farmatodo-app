@@ -15,7 +15,10 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.Clock;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,8 +48,22 @@ public class TokenizationService implements TokenizationUseCase {
     public CardToken createToken(String pan, String cvv, String expDate) {
         // 1. Probabilidad de rechazo
         if (ThreadLocalRandom.current().nextDouble() < rejectionProbability) {
-            log.warn("Tokenization request rejected by risk policy.");
+
             throw new RuntimeException("Tokenization rejected due to high risk score.");
+        }
+
+        if (pan.length() != 16){
+            throw new IllegalArgumentException("Numero de Tarjeta invalido");
+        }
+
+        if (cvv.length() != 3){
+            throw new IllegalArgumentException("CVV invalido");
+        }
+
+        boolean cardDateValid = isCardValid(expDate) ;
+
+        if (!cardDateValid){
+            throw new IllegalArgumentException("La Trajeta esta expirada");
         }
 
         // 2. Encriptación (AES)
@@ -85,5 +102,17 @@ public class TokenizationService implements TokenizationUseCase {
         } catch (Exception e) {
             throw new RuntimeException("Error encrypting sensitive data", e);
         }
+    }
+
+    private boolean isCardValid (String expDate){
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+            try {
+                YearMonth expiryDate = YearMonth.parse(expDate, formatter);
+                YearMonth currentMonth = YearMonth.now(Clock.systemDefaultZone());
+                return !expiryDate.isBefore(currentMonth);
+
+            } catch (DateTimeParseException e) {
+                return false;
+            }
     }
 }

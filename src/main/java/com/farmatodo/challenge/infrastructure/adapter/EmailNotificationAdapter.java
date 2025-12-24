@@ -1,5 +1,4 @@
-package com.farmatodo.challenge.infrastructure.adapter.notification;
-
+package com.farmatodo.challenge.infrastructure.adapter;
 import com.farmatodo.challenge.domain.port.out.NotificationPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,7 @@ public class EmailNotificationAdapter implements NotificationPort {
             log.info("Iniciando envío de correo a: {}", to);
 
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("noreply@farmatodo.com");
+            message.setFrom("haidarbazzi4@gmail.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);

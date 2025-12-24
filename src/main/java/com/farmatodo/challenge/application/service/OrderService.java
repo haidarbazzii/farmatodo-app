@@ -5,6 +5,7 @@ import com.farmatodo.challenge.domain.port.in.OrderUseCase;
 import com.farmatodo.challenge.domain.port.out.*;
 import com.farmatodo.challenge.infrastructure.persistence.entity.CustomerEntity;
 import com.farmatodo.challenge.infrastructure.persistence.entity.OrderEntity;
+import com.farmatodo.challenge.infrastructure.persistence.repository.CardTokenJpaRepository;
 import com.farmatodo.challenge.infrastructure.persistence.repository.CustomerJpaRepository;
 import com.farmatodo.challenge.infrastructure.persistence.repository.OrderJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,10 +33,17 @@ public class OrderService implements OrderUseCase {
     private final CartRepositoryPort cartRepository;
     // Inyectamos el repo de clientes para buscar los datos
     private final CustomerJpaRepository customerRepository;
-
+    private final CardTokenJpaRepository  cardTokenRepository;
     @Override
     @Transactional
     public Order checkoutCart(String customerEmail, UUID cardTokenId) {
+
+        boolean isTokenExpired = cardTokenRepository.findById(cardTokenId).get().getExpirationDate().isBefore(LocalDateTime.now());
+
+        if(isTokenExpired) {
+            throw new IllegalArgumentException("El token de la tarjeta esta expirado");
+        }
+
         // 1. Buscar el carrito del usuario
         Cart cart = cartRepository.findByCustomerEmail(customerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("No hay carrito activo para: " + customerEmail));
@@ -121,7 +129,6 @@ public class OrderService implements OrderUseCase {
                 .phoneNumber(customerEntity.getPhoneNumber())
                 .address(customerEntity.getAddress())
                 .build();
-
         // Buscamos precio y nombre real del producto.
         List<OrderItem> enrichedItems = new ArrayList<>();
         for (OrderItem item : orderInput.getItems()) {
@@ -163,17 +170,16 @@ public class OrderService implements OrderUseCase {
             }
         });
         transactionLogPort.logEvent(txId, "STOCK_RESERVATION", "SUCCESS", "Stock reservado");
-
         // 5. Proceso de Pago (Simulado)
         boolean approved = false;
         int attempts = 0;
+
         while (attempts < maxRetries && !approved) {
             attempts++;
             approved = simulatePaymentGateway();
             transactionLogPort.logEvent(txId, "PAYMENT_ATTEMPT", approved ? "SUCCESS" : "FAILURE", "Intento #" + attempts);
         }
         order.setPaymentAttempts(attempts);
-
         // 6. Finalización
         if (approved) {
             order.setStatus(OrderStatus.APPROVED);
