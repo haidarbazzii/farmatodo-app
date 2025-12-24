@@ -41,9 +41,8 @@ public class AdminController {
     // 3. Reabastecer Stock de un Producto
     @PostMapping("/products/{id}/restock")
     public ResponseEntity<String> restockProduct(@PathVariable Long id, @RequestParam int quantity) {
-        System.out.println("Estas por aca");
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
         product.setStock(product.getStock() + quantity);
         productRepository.save(product);

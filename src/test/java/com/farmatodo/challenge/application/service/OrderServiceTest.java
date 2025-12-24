@@ -2,8 +2,10 @@ package com.farmatodo.challenge.application.service;
 
 import com.farmatodo.challenge.domain.model.*;
 import com.farmatodo.challenge.domain.port.out.*;
+import com.farmatodo.challenge.infrastructure.persistence.entity.CardTokenEntity;
 import com.farmatodo.challenge.infrastructure.persistence.entity.CustomerEntity;
 import com.farmatodo.challenge.domain.port.out.CartRepositoryPort;
+import com.farmatodo.challenge.infrastructure.persistence.repository.CardTokenJpaRepository;
 import com.farmatodo.challenge.infrastructure.persistence.repository.CustomerJpaRepository;
 import com.farmatodo.challenge.infrastructure.persistence.repository.OrderJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +37,9 @@ class OrderServiceTest {
     @Mock private NotificationPort notificationPort;
     @Mock private TransactionLogPort transactionLogPort;
     @Mock private CustomerJpaRepository customerRepository;
-    @Mock private CartRepositoryPort cartRepository; // ¡Nuevo Mock para el carrito!
+    @Mock private CartRepositoryPort cartRepository; //
+    @Mock private CardTokenJpaRepository cardTokenRepository;
+
 
     @InjectMocks
     private OrderService orderService;
@@ -160,12 +165,19 @@ class OrderServiceTest {
                 .items(List.of(new CartItem(1L, 2)))
                 .build();
 
+        // --- NUEVO: Preparar el Token Simulado ---
+        CardTokenEntity cardTokenStub = new CardTokenEntity();
+        // Si tu lógica valida fechas dentro de CardToken, configura una fecha válida aquí:
+        // cardTokenStub.setExpDate("12/30");
+        cardTokenStub.setExpirationDate(LocalDateTime.now().plusDays(1));
+
         // Mocks necesarios para el checkout Y para el processOrder interno
         when(cartRepository.findByCustomerEmail("test@farmatodo.com")).thenReturn(Optional.of(cart));
         when(customerRepository.findByEmail("test@farmatodo.com")).thenReturn(Optional.of(customerEntity));
         when(inventoryPort.findById(1L)).thenReturn(Optional.of(productStub));
         when(inventoryPort.decreaseStock(1L, 2)).thenReturn(true);
 
+        when(cardTokenRepository.findById(fixedToken)).thenReturn(Optional.of(cardTokenStub));
         // Ejecutar
         Order result = orderService.checkoutCart("test@farmatodo.com", fixedToken);
 
@@ -178,6 +190,12 @@ class OrderServiceTest {
     @Test
     @DisplayName("7. Carrito: Debe fallar si el carrito no existe")
     void shouldFailIfCartNotFound() {
+        CardTokenEntity tokenValido = new CardTokenEntity();
+        tokenValido.setExpirationDate(LocalDateTime.now().plusDays(1)); // Fecha futura
+
+        // Le decimos al mock: "Cuando busquen cualquier token, devuelve este válido"
+        when(cardTokenRepository.findById(any())).thenReturn(Optional.of(tokenValido));
+
         when(cartRepository.findByCustomerEmail(anyString())).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () ->
@@ -188,6 +206,10 @@ class OrderServiceTest {
     @Test
     @DisplayName("8. Carrito: Debe fallar si el carrito está vacío")
     void shouldFailIfCartIsEmpty() {
+        CardTokenEntity tokenValido = new CardTokenEntity();
+        tokenValido.setExpirationDate(LocalDateTime.now().plusDays(1)); // Fecha futura
+        when(cardTokenRepository.findById(any())).thenReturn(Optional.of(tokenValido));
+
         Cart emptyCart = Cart.builder().items(new ArrayList<>()).build();
         when(cartRepository.findByCustomerEmail(anyString())).thenReturn(Optional.of(emptyCart));
 
