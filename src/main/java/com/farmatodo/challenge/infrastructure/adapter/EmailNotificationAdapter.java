@@ -22,8 +22,8 @@ public class EmailNotificationAdapter implements NotificationPort {
     private String fromEmail;
 
     public EmailNotificationAdapter(
-            @Value("4013e313007d0c1d6bf1e251f5ec1cfd") String apiKey,
-            @Value("edb4acbb2df8f88bda3ba01a05d136e8") String secretKey) {
+            @Value("${mailjet.api.key}") String apiKey,
+            @Value("${mailjet.secret.key}") String secretKey) {
 
         // 1. Configuramos las opciones
         ClientOptions options = ClientOptions.builder()

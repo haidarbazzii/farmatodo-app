@@ -20,8 +20,6 @@ public class TransactionLogAdapter implements TransactionLogPort {
     private final TransactionLogJpaRepository repository;
 
     @Override
-    // REQUIRES_NEW: Vital para logs. Si la transacción principal falla (rollback),
-    // queremos que el log de "Fallo" SÍ se guarde. Crea una mini-transacción aparte.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveLog(TransactionLog log) {
         TransactionLogEntity entity = new TransactionLogEntity(
