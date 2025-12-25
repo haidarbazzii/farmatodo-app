@@ -37,7 +37,7 @@ public class TransactionLogAdapter implements TransactionLogPort {
         return repository.findAllByOrderByTimestampDesc()
                 .stream()
                 .map(this::toDomain)
-                .limit(20).collect(Collectors.toList());
+                .limit(30).collect(Collectors.toList());
     }
 
     @Override

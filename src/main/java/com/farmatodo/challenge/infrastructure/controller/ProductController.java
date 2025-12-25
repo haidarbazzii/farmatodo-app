@@ -23,6 +23,11 @@ public class ProductController {
         return ResponseEntity.ok(productUseCase.searchProducts(query));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Product>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllAvailableProducts());
+    }
+
     @GetMapping("/history")
     public ResponseEntity<List<SearchHistory>> getHistory() {
         return ResponseEntity.ok(productUseCase.getSearchHistory());

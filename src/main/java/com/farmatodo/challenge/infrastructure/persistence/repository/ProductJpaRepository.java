@@ -13,7 +13,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
     List<ProductEntity> findByNameContainingIgnoreCase(String name);
 
     // =================================================================================
-    // SOLUCIÓN DE CONCURRENCIA (Locking Implícito)
+    // CONCURRENCIA (Locking Implícito)
     // =================================================================================
     // Esta query es atómica a nivel de base de datos.
     // UPDATE products SET stock = stock - X WHERE id = Y AND stock >= X

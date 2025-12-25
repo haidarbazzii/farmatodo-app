@@ -7,7 +7,7 @@ import com.farmatodo.challenge.infrastructure.persistence.repository.CustomerJpa
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service; // <--- ¡Esta anotación es la clave!
 
-@Service // Le dice a Spring: "Soy la implementación de CustomerUseCase, inyéctame"
+@Service
 @RequiredArgsConstructor
 public class CustomerService implements CustomerUseCase {
 

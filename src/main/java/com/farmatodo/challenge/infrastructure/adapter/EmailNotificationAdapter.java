@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailNotificationAdapter implements NotificationPort {
 
-    // NO pongas @Autowired aquí
     private final MailjetClient client;
 
     @Value("haidarbazzi4@gmail.com")

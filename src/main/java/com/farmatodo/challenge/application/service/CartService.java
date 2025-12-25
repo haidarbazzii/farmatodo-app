@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
-
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -32,15 +30,11 @@ public class CartService {
 
         CustomerEntity customerReal = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("El cliente con email " + email + " no existe"));
-        Customer customerCart = new Customer(customerReal.getId(),customerReal.getName(),customerReal.getEmail(),customerReal.getPhoneNumber(),customerReal.getAddress());
+        Customer customerCart = Customer.builder().id(customerReal.getId()).name(customerReal.getName()).email(customerReal.getEmail()).phoneNumber(customerReal.getPhoneNumber()).address(customerReal.getAddress()).build();
 
         Cart cart = cartRepository.findByCustomerEmail(email)
                 .orElseGet(() -> Cart.builder()
                         .customer(customerCart).build());
-
-        System.out.println(cart.getCustomer().getPhoneNumber());
-
-        // 3. Añadir item al carrito
 
         cart.addItem(productId, quantity, currStock);
 

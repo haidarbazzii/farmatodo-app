@@ -37,12 +37,30 @@ public class CartPersistenceAdapter implements CartRepositoryPort {
                 .collect(Collectors.toList()));
 
         CartEntity saved = repository.save(entity);
-        return toDomain(saved);
+        return toDomainComplete(saved, cart);
     }
 
     @Override
     public void deleteByCustomerEmail(String email) {
         repository.deleteByCustomerEmail(email);
+    }
+
+    private Cart toDomainComplete(CartEntity entity, Cart cart){
+        com.farmatodo.challenge.domain.model.Customer customer = com.farmatodo.challenge.domain.model.Customer.builder()
+                .id(cart.getCustomer().getId())
+                .name(cart.getCustomer().getName())
+                .email(entity.getCustomerEmail())
+                .phoneNumber(cart.getCustomer().getPhoneNumber())
+                .address(cart.getCustomer().getAddress())
+                .build();
+
+        return Cart.builder()
+                .id(entity.getId())
+                .customer(customer)
+                .items(entity.getItems().stream()
+                        .map(i -> new CartItem(i.getProductId(), i.getQuantity()))
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     private Cart toDomain(CartEntity entity) {

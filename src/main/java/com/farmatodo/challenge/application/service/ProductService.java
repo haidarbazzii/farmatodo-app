@@ -30,7 +30,7 @@ public class ProductService implements ProductUseCase {
     public List<Product> getAllAvailableProducts() {
         // Filtramos usando la variable dinámica
         return inventoryPort.findAll().stream()
-                .filter(p -> p.getStock() > minStockDisplay)
+                .filter(p -> p.getStock() > minStockDisplay).limit(30)
                 .collect(Collectors.toList());
     }
 
@@ -47,7 +47,6 @@ public class ProductService implements ProductUseCase {
     public List<Product> searchProducts(String query) {
         // 1. Registro asíncrono (No bloquea la respuesta)
         searchHistoryPort.saveSearchHistory(query);
-
         // 2. Búsqueda y Filtrado
         return inventoryPort.findByNameContaining(query).stream()
                 .filter(product -> product.hasStock(minStockDisplay))
