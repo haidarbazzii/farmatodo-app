@@ -10,10 +10,11 @@ API RESTful desarrollada en **Java (Spring Boot)** que simula un ecosistema de c
 
 El proyecto sigue estrictamente el patrón de **Puertos y Adaptadores**, garantizando que la lógica de negocio permanezca desacoplada de frameworks y bases de datos.
 
-graph TD
-    Client[Cliente / Postman] -->|HTTP REST| InAdapter[Adapter: Controllers]
+Flujo de peticiones
+    Cliente --> Postman --> Render --> Docker --> Github --> De vuelta al cliente
+Estructura General del proyecto
     
-    subgraph "Core del Dominio"
+     Dominio
         InAdapter --> InPort[Input Ports (Use Cases)]
         InPort --> Service[Application Services]
         Service --> Domain[Domain Entities]
