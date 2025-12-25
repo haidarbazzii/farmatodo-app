@@ -31,11 +31,12 @@ public class CartService {
         CustomerEntity customerReal = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("El cliente con email " + email + " no existe"));
         Customer customerCart = Customer.builder().id(customerReal.getId()).name(customerReal.getName()).email(customerReal.getEmail()).phoneNumber(customerReal.getPhoneNumber()).address(customerReal.getAddress()).build();
-
+        // cart aca se saca del repositorio y como la cartentinty no guarda el customer entero,
+        // cart solo tiene el email. debes aqui asignarle a cart todos los valores que recogiste anteriormente.
         Cart cart = cartRepository.findByCustomerEmail(email)
                 .orElseGet(() -> Cart.builder()
                         .customer(customerCart).build());
-
+        cart.setCustomer(customerCart);
         cart.addItem(productId, quantity, currStock);
 
         // 4. Guardar
