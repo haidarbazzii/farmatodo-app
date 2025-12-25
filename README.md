@@ -246,7 +246,4 @@ Dado que el gemini utilizado proviene de una cuenta corporativa, no puede compar
 
 Adjunto en el siguiente documento el diagrama de la arquitectura e interaccion de los distintos componentes del sistema: https://docs.google.com/document/d/1aW4cgSUCOEBhp27yOpSRBvqWpcd0W7wSzFyHowLTTR0/edit?usp=sharing
 
-
-```
-
-```
+Gracias por su tiempo.
