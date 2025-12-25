@@ -24,7 +24,7 @@ public class CustomerService implements CustomerUseCase {
         CustomerEntity entity = new CustomerEntity();
         entity.setName(customer.getName());
         entity.setEmail(customer.getEmail());
-        entity.setPhoneNumber(customer.getPhoneNumber());
+        entity.setPhoneNumber(normalizePhoneNumber(customer.getPhoneNumber()));
         entity.setAddress(customer.getAddress());
 
         // 3. Guardar en DB
@@ -33,5 +33,23 @@ public class CustomerService implements CustomerUseCase {
         // 4. Actualizar ID en el objeto de dominio y retornarlo
         customer.setId(saved.getId());
         return customer;
+    }
+    public String normalizePhoneNumber(String phone) {
+        // 1. Eliminar caracteres que no sean dígitos (incluyendo el +)
+        // Esto convierte "+580424..." en "580424..."
+        String digits = phone.replaceAll("\\D", "");
+
+        // 2. Si empieza por 58 (código país), lo quitamos
+        if (digits.startsWith("58")) {
+            digits = digits.substring(2);
+        }
+
+        // 3. Si empieza por 0, lo quitamos
+        if (digits.startsWith("0")) {
+            digits = digits.substring(1);
+        }
+
+        // Resultado: "4247773154" (Formato limpio de 10 dígitos)
+        return digits;
     }
 }
