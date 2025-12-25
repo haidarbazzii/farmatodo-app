@@ -242,7 +242,8 @@ Se declara el uso de asistentes de Inteligencia Artificial Generativa durante el
 3. **Integración de Email:** Solución a bloqueos de puertos SMTP regionales mediante la implementación de la API HTTP de Mailjet.
 4. **Generación de Código:** Creación de esqueletos para Tests Unitarios con Mockito, ayuda con estructura y lógica de negocio.
 
-Dado que el gemini utilizado proviene de una cuenta corporativa, no puede compartirse la conversación.
+Dado que el gemini utilizado proviene de una cuenta corporativa, no puede compartirse la conversación. Sin embargo, pude recopilar la larga conversacion en este documento: https://docs.google.com/document/d/1UOkMqNC7WmMN6Rds32doBCDk45m9VENoxDOubdPW8Iw/edit?usp=sharing
+
 Adjunto en el siguiente documento el diagrama de la arquitectura e interaccion de los distintos componentes del sistema: https://docs.google.com/document/d/1aW4cgSUCOEBhp27yOpSRBvqWpcd0W7wSzFyHowLTTR0/edit?usp=sharing
 
 
