@@ -17,6 +17,7 @@ public class CustomerEntity {
     private String email;
 
     @Column(unique = true)
+    @Pattern(regexp = "^(\\+58)?0?\\d{10}$", message = "El teléfono debe tener un formato válido (ej: +5804241234567)")
     private String phoneNumber;
 
     private String address;
