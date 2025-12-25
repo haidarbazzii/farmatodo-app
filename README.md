@@ -16,12 +16,11 @@ Cliente --> Postman --> Render --> Docker --> Github --> De vuelta al cliente
 
 Estructura General del proyecto:
     
-     Dominio
+    Dominio
         Modelo --> Componentes (Modelado) del Proyecto
         Puertos
             In (Input Ports) --> Casos de uso
             Out (Output Ports) --> Puertos de Salida (Repositorios)
-    end
     
     Infraestructura
         Adapter --> Adaptadores (Conexion con los puertos)
@@ -31,13 +30,10 @@ Estructura General del proyecto:
             Repository --> Representacion de almacenamiento (repositorio) de datos
         Exception --> Para manejar excepciones
         Security --> Filtro de Autencticacion de la API
-    end
 
-    Service
-        Adapter --> Adaptadores de Conexion a puertos (Servicios: conectan la capa de infraestructura y el dominio)
-    DBAdapter --> Database[(PostgreSQL, Render)]
-    EmailAdapter --> Mailjet[Mailjet API]
-
+    Application
+        Service --> Servicios de conexion entre Infraestructura y Aplicacion
+        
 
 ## 🚀 Características Principales
 
