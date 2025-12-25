@@ -10,24 +10,32 @@ API RESTful desarrollada en **Java (Spring Boot)** que simula un ecosistema de c
 
 El proyecto sigue estrictamente el patrón de **Puertos y Adaptadores**, garantizando que la lógica de negocio permanezca desacoplada de frameworks y bases de datos.
 
-Flujo de peticiones
-    Cliente --> Postman --> Render --> Docker --> Github --> De vuelta al cliente
-Estructura General del proyecto
+Flujo de peticiones:
+    
+Cliente --> Postman --> Render --> Docker --> Github --> De vuelta al cliente
+
+Estructura General del proyecto:
     
      Dominio
-        InAdapter --> InPort[Input Ports (Use Cases)]
-        InPort --> Service[Application Services]
-        Service --> Domain[Domain Entities]
-        Service --> OutPort[Output Ports]
+        Modelo --> Componentes (Modelado) del Proyecto
+        Puertos
+            In (Input Ports) --> Casos de uso
+            Out (Output Ports) --> Puertos de Salida (Repositorios)
     end
     
-    subgraph "Infraestructura"
-        OutPort --> DBAdapter[Adapter: JPA Repository]
-        OutPort --> EmailAdapter[Adapter: Mailjet Client]
-        OutPort --> LogAdapter[Adapter: Transaction Log]
+    Infraestructura
+        Adapter --> Adaptadores (Conexion con los puertos)
+        Controller --> Conexion externa con la API y el Cliente
+        Persistence --> Persistencia en Base de Datos
+            Entity --> Modelado de Entidades (Tablas) en la BD
+            Repository --> Representacion de almacenamiento (repositorio) de datos
+        Exception --> Para manejar excepciones
+        Security --> Filtro de Autencticacion de la API
     end
-    
-    DBAdapter --> Database[(PostgreSQL)]
+
+    Service
+        Adapter --> Adaptadores de Conexion a puertos (Servicios: conectan la capa de infraestructura y el dominio)
+    DBAdapter --> Database[(PostgreSQL, Render)]
     EmailAdapter --> Mailjet[Mailjet API]
 
 
@@ -37,7 +45,7 @@ Estructura General del proyecto
 * **🛒 Carrito de Compras:** Gestión completa de estado, validación de stock en tiempo real y conversión a Orden.
 * **⚡ Búsqueda Asíncrona:** Registro de historial de búsquedas en hilo separado (`@Async`) para optimizar tiempos de respuesta.
 * **🔄 Resiliencia:** Pasarela de pagos simulada con probabilidad de fallo configurable y sistema de **reintentos automáticos (Backoff)**.
-* **📧 Notificaciones:** Envío de correos electrónicos transaccionales (integración con **Mailjet**).
+* **📧 Notificaciones:** Envío de correos electrónicos transaccionales (integración con **Mailjet**). NOTA: cuando se realicen pruebas, revisar el SPAM del correo.
 * **⚙️ Configuración Dinámica:** Endpoints administrativos para modificar reglas de negocio en tiempo real (probabilidades de fallo, stocks mínimos, reintentos).
 
 ---
@@ -45,9 +53,9 @@ Estructura General del proyecto
 ## 🛠️ Tecnologías
 
 * **Lenguaje:** Java 25 (Preview Features Enabled)
-* **Framework:** Spring Boot 3.4.x.
+* **Framework:** Spring Boot 4.0.0
 * **Servidor Web:** Se utilizo Render como servicio de hosting para la aplicacion web y la base de datos en la nube.
-* **Base de Datos:** PostgreSQL 16.
+* **Base de Datos:** PostgreSQL 16 en BD de Render.
 * **Containerización:** Docker & Docker Compose
 * **Email Provider:** Mailjet Client 5.2.5
 * **Seguridad:** API Key Filter & AES Encryption
@@ -94,18 +102,58 @@ La forma más rápida de levantar la API y la Base de Datos es usando Docker Com
 docker-compose up --build
 
 ```
-
-La API estará disponible en: `https://farmatodo-challenge.onrender.com`
-Se pueden hacer peticiones a traves de la siguiente coleccion de Postman: https://haidarbazzi4-674388.postman.co/workspace/Haidar-Bazzi's-Workspace~fc17f60b-f1c3-4e0c-84a0-a9c829b8cacd/collection/50959502-b7b7a243-5e31-4aec-943a-948dff6b7a36?action=share&creator=50959502&active-environment=50959502-7618e041-9884-4671-b60f-aacbfd91af92
+La imagen de Docker, la cual se conecta y actuliza la nube en Render, se encuentra publicada en Docker Hub: https://hub.docker.com/r/haidarb4/farmatodo-challenge
 
 ---
+## Despliegue en la Nube
+Dado que no se cuenta con una suscripcion a GCP, se decidio utilizar el proveedor en la nube Render de sencilla implementacion. A continuacion se muestran los pasos para su despliegue:
 
+### Desplegar la Base de Datos (PostgreSQL)
+
+* En el Dashboard de Render, haz clic en New + y selecciona PostgreSQL.
+* Name: El que prefieras (farmatodo-db en este caso).
+* Region: Elige la misma región donde desplegarás la API (ej: Ohio).
+* Plan: Selecciona el plan que requieras.
+
+Dale a Create Database. Una vez creada, copia el valor de "Internal Connection URL".
+
+### Desplegar el Servidor Web (Spring Boot)
+
+* En el Dashboard, haz clic en New + y selecciona Web Service.
+* Conecta tu contenedor/repositorio de docker (farmatodo-challenge).
+* Configura los detalles básicos:
+    * Name: farmatodo-api
+    * Region: La misma que tu base de datos.
+
+### 3. Configurar Variables de Entorno (Environment)
+
+Antes de darle a "Deploy", baja a la sección Environment Variables y agrega las siguientes claves. Render inyectará estos valores en tu contenedor, sobrescribiendo el application.properties.
+* SPRING_DATASOURCE_URL: la Internal Connection URL del paso 1. Cambia el inicio de la URL: postgres:// por jdbc:postgresql://.
+* SPRING_DATASOURCE_USERNAME: Usuario de la DB.
+* SPRING_DATASOURCE_PASSWORD: Contraseña de la DB.
+* API_KEY_SECRET: clave secreta para el Header de la API.
+* APP_ENCRYPTION_KEY: Deben ser 16 digitos exactos.
+* MAILJET_API_KEY: Tu Public Key de Mailjet.
+* MAILJET_SECRET_KEY: Tu Secret Key de Mailjet.
+* MAIL_FROM_MAIL: Tu correo verificado en Mailjet.
+
+### Finalizar y Probar
+
+* Haz clic en Create Web Service.
+* Espera a que termine el proceso de Build (descargará la imagen de Java 25 y compilará con Maven).
+* Cuando veas "Your service is live", copia la URL que te da Render (ej: https://farmatodo-api.onrender.com).
+* Prueba de humo: Abre https://tu-url.onrender.com/ping en el navegador. Deberías ver pong.
+
+Nota sobre la conexión JDBC: Render te da la URL como postgres://.... Spring Boot necesita jdbc:postgresql://.... Si tu URL interna es: postgres://usuario:password@dpg-xxx-a/farmatodo_db Tu variable SPRING_DATASOURCE_URL debe ser: jdbc:postgresql://dpg-xxx-a:5432/farmatodo_db (Asegúrate de quitar el usuario/pass de la URL si los pones en las variables separadas USERNAME y PASSWORD).
+
+---
 ## 📖 Documentación de la API
+Se accede mediante una coleccion en Postman. Al no disponer de una suscripcion de Postman, para proteger la API y su acceso, la coleccion de Postman fue compartida junto a sus variables de entorno al correo de quien envio esta prueba tecnica. Antes de correrla, se debe seleccionar Env-Variables como el entorno utilizado y se pueden correr pruebas en cada una de las pestañas visibles en la coleccion, cambiando a conveniencia los parametros de la URL y el cuerpo JSON de las peticiones.
 
 🔐 **Autenticación:** Todos los endpoints (excepto `/ping`) requieren el siguiente header:
 
 * **Key:** `X-API-KEY`
-* **Value:** `farmatodo-secret-key-2025` (o el valor que configures en `API_KEY_SECRET`)
+* **Value:** `**********` (el valor que configures en `API_KEY_SECRET`)
 
 ### 1. Tokenización (Crear Token de Tarjeta)
 
@@ -150,7 +198,7 @@ Procesa el carrito activo usando el token generado previamente.
 
 ```
 
-### 4. Búsqueda de Productos
+### 4. Búsqueda de Productos e Historial
 
 **GET** `/api/v1/products/search?query=acetaminofen`
 
@@ -159,6 +207,9 @@ Procesa el carrito activo usando el token generado previamente.
 
 **GET** `/api/v1/products`
 * Devuelve una lista de productos (devuelve un maximo de 30)
+
+**GET** `/api/v1/products/history`
+* Devuelve una lista busquedas de productos pasada (devuelve un maximo de 20)
 
 ### 5. Administración (Configuración en Caliente)
 
@@ -169,7 +220,12 @@ Modifica las reglas de negocio sin reiniciar el servidor.
 * **POST** `/api/v1/admin/config/max-retries?value=5` -> Ajustar reintentos de pago.
 * **POST** `/api/v1/admin/config/min-stock-display?value=3` -> Ajustar el minimo de stock que debe tener un producto para ser mostrado
 * **POST** `/api/v1/admin/config/token-rejection-probability?value=0.2` -> Ajustar la probabilidad de que sea rechazada la tokenizacion de una tarjeta (0.0 - 1.0)
+* **POST** `/api/v1/admin/config/products/{id}/restock` -> Aumenta el stock segun el ID del producto ubicado en el URL de la peticion
 
+### 6. Logs de Transacciones
+
+* **GET** `/api/v1/audit` -> Obtener log de ultimas transacciones (devuelve un maximo de 30)
+* **GET** `/api/v1/audit/{transactionId}` -> Obtener log de una transaccion segun su ID
 ---
 
 ## 🧪 Ejecutar Pruebas
